@@ -12,6 +12,7 @@ provisioningte0256624006 / llm-data / dolma / data
 
 ## Example
 For this example I will be using `wiki-en-simple` dataset.
+
 ### Download data
 ```bash
 azcopy cp <source> <destination> --recursive=true
@@ -66,6 +67,7 @@ cd /home/azureuser/cloudfiles/code/Users/JNKuriakose/dolma_stuffs/datasets/wiki-
 mkdir documents
 mv -t documents/ en_simple_wiki-0000.json en_simple_wiki-0001.json
 ```
+
 ### Taggers
 Run the built-in taggers on the downloaded documents. We can used a `YAML` file to configure the required parametes.
 
@@ -96,6 +98,54 @@ Run the file:
 ```bash
 dolma -c tag_config.yaml tag
 ```
+Note: If the following error is encountered :
+```bach
+ValueError: Invalid mode: 'rt'
+```
+Kindly modify the source code. Change `rt` to `r`
+
+Output:
+```bash
+(dolma_env) azureuser@jnkuriakose2:~/cloudfiles/code/Users/JNKuriakose/dolma_stuffs$ dolma -c tag_config.yaml tag
+[nltk_data] Downloading package punkt to /home/azureuser/nltk_data...
+[nltk_data]   Unzipping tokenizers/punkt.zip.
+debug: false
+destination: null
+documents:
+- /home/azureuser/cloudfiles/code/Users/JNKuriakose/dolma_stuffs/datasets/wiki-en-simple/documents/*
+dryrun: false
+experiment: exp
+ignore_existing: false
+processes: 4
+profile:
+  enable: false
+  lines: 100
+  output: null
+  sort_key: tottime
+  steps: null
+tagger_modules: []
+taggers:
+- random_number_v1
+- cld2_en_paragraph_with_doc_score_v2
+- ft_lang_id_en_paragraph_with_doc_score_v2
+- char_length_with_paragraphs_v1
+- whitespace_tokenizer_with_paragraphs_v1
+work_dir:
+  input: null
+  output: null
+Found 2 files to process
+Downloading …/supervised-models/lid.176.bin ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 100% 0:00:02 131.3/131.3 MB
+documents: 6.11Md [2:21:55, 718d/s]
+files: 2.00f [2:21:55, 4.26ks/f]/s]
+```
+
+### Conversion Step
+The dataset available in Azure has been extracted. Whereas for deduplication Dolma toolkit requires the files to be in `.gz` format. So the dataset needs to be compressed again.
+```bash
+cd /home/azureuser/cloudfiles/code/Users/JNKuriakose/dolma_stuffs/datasets/wiki-en-simple/documents/
+pigz */*.json
+```
+
 ### Deduplication
 To deduplicate a set of documents at the attribute or paragraph level using a Bloom filter.
 
@@ -160,8 +210,9 @@ processes: 8
 ```
 Run the file:
 ```bash
-dolma -c dedupe_config.yaml tag
+dolma -c dedupe_config.yaml dedupe
 ```
+
 ### Mixer
 Combines data from multiple sources into a unified output. Merges the named attributes and applies the configured filters.
 #### Configuration
@@ -212,7 +263,6 @@ streams:
 
 # to make it run in parallel
 processes: 8
-```
 ```
 Run the file:
 ```bash
