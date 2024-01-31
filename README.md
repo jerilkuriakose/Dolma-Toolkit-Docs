@@ -68,7 +68,7 @@ mkdir documents
 mv -t documents/ en_simple_wiki-0000.json en_simple_wiki-0001.json
 ```
 
-### Taggers
+### 1. Taggers
 Run the built-in taggers on the downloaded documents. We can used a `YAML` file to configure the required parametes.
 
 #### Configuration
@@ -139,7 +139,7 @@ documents: 6.11Md [2:21:55, 718d/s]
 files: 2.00f [2:21:55, 4.26ks/f]/s]
 ```
 
-### Conversion Step
+### 2. Conversion Step (only for uncompressed dataset)
 The dataset available in Azure has been extracted. Whereas for deduplication Dolma toolkit requires the files to be in `.gz` format. So the dataset needs to be compressed again.
 ```bash
 cd /home/azureuser/cloudfiles/code/Users/JNKuriakose/dolma_stuffs/datasets/wiki-en-simple/documents/
@@ -151,7 +151,7 @@ cd /home/azureuser/cloudfiles/code/Users/JNKuriakose/dolma_stuffs/datasets/wiki-
 pigz */*.json
 ```
 
-### Deduplication
+### 3. Deduplication
 To deduplicate a set of documents at the attribute or paragraph level using a Bloom filter.
 
 Just like taggers, `dolma dedupe` will create a set of attribute files, corresponding to the specified input document files. The attributes will identify whether the entire document is a duplicate (based on some key), or identify spans in the text that contain duplicate paragraphs.
@@ -249,7 +249,7 @@ Run the file:
 dolma -c dedupe_config.yaml dedupe
 ```
 
-### Mixer
+### 4. Mixer
 Combines data from multiple sources into a unified output. Merges the named attributes and applies the configured filters.
 #### Configuration
 Mixer example: `mixer_config.yaml`
@@ -300,6 +300,10 @@ streams:
 # to make it run in parallel
 processes: 8
 ```
+Run the file:
+```bash
+dolma -c mixer_config.yaml tag
+```
 *Output*
 ```bash
 (dolma_env) azureuser@jnkuriakose2:~/cloudfiles/code/Users/JNKuriakose/dolma_stuffs$ dolma -c mixer_config.yaml mix
@@ -341,8 +345,4 @@ work_dir:
 [2024-01-31T09:11:38Z INFO  dolma::shard] Dropped 2928291 of 2928291 documents from /home/azureuser/cloudfiles/code/Users/JNKuriakose/dolma_stuffs/datasets/wiki-en-simple/documents/en_simple_wiki-0001.json.gz
 [2024-01-31T09:14:48Z INFO  dolma::shard] Dropped 3159681 of 3181719 documents from /home/azureuser/cloudfiles/code/Users/JNKuriakose/dolma_stuffs/datasets/wiki-en-simple/documents/en_simple_wiki-0000.json.gz
 [2024-01-31T09:14:48Z INFO  dolma::mixer] Done!
-```
-Run the file:
-```bash
-dolma -c mixer_config.yaml tag
 ```
