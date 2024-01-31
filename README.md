@@ -145,6 +145,11 @@ The dataset available in Azure has been extracted. Whereas for deduplication Dol
 cd /home/azureuser/cloudfiles/code/Users/JNKuriakose/dolma_stuffs/datasets/wiki-en-simple/documents/
 pigz */*.json
 ```
+Need to do the same for the attributes created or else will result in error during the `mix` stage:
+```bash
+cd /home/azureuser/cloudfiles/code/Users/JNKuriakose/dolma_stuffs/datasets/wiki-en-simple/attributes/exp
+pigz */*.json
+```
 
 ### Deduplication
 To deduplicate a set of documents at the attribute or paragraph level using a Bloom filter.
