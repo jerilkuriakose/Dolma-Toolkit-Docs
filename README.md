@@ -104,7 +104,7 @@ ValueError: Invalid mode: 'rt'
 ```
 Kindly modify the source code. Change `rt` to `r`
 
-Output:
+*Output*:
 ```bash
 (dolma_env) azureuser@jnkuriakose2:~/cloudfiles/code/Users/JNKuriakose/dolma_stuffs$ dolma -c tag_config.yaml tag
 [nltk_data] Downloading package punkt to /home/azureuser/nltk_data...
@@ -180,6 +180,37 @@ bloom_filter:
 
 # to make it run in parallel
 processes: 8
+```
+*Output*
+```bash
+(dolma_env) azureuser@jnkuriakose2:~/cloudfiles/code/Users/JNKuriakose/dolma_stuffs$ dolma -c dedupe_config.yaml dedupe
+bloom_filter:
+  desired_false_positive_rate: 0.0001
+  estimated_doc_count: 6000000
+  file: /tmp/deduper_bloom_filter.bin
+  read_only: false
+  size_in_bytes: 0
+dedupe:
+  name: dedupe_paragraphs
+  paragraphs:
+    attribute_name: bff_duplicate_paragraph_spans
+  skip_empty: true
+documents:
+- /home/azureuser/cloudfiles/code/Users/JNKuriakose/dolma_stuffs/datasets/wiki-en-simple/documents/*
+processes: 8
+work_dir:
+  input: /tmp/dolma-input-vdcmgmll
+  output: /tmp/dolma-output-q_enf2zn
+[2024-01-31T07:41:58Z INFO  dolma::bloom_filter] Loading bloom filter from "/tmp/deduper_bloom_filter.bin"...
+[2024-01-31T07:41:58Z INFO  dolma::deduper] Writing attributes for /home/azureuser/cloudfiles/code/Users/JNKuriakose/dolma_stuffs/datasets/wiki-en-simple/documents/en_simple_wiki-0001.json.gz to /home/azureuser/cloudfiles/code/Users/JNKuriakose/dolma_stuffs/datasets/wiki-en-simple/attributes/dedupe_paragraphs/en_simple_wiki-0001.json.gz.tmp
+[2024-01-31T07:41:58Z INFO  dolma::deduper] Writing attributes for /home/azureuser/cloudfiles/code/Users/JNKuriakose/dolma_stuffs/datasets/wiki-en-simple/documents/en_simple_wiki-0001.json.gz to /home/azureuser/cloudfiles/code/Users/JNKuriakose/dolma_stuffs/datasets/wiki-en-simple/attributes/dedupe_paragraphs/en_simple_wiki-0001.json.gz.tmp
+[2024-01-31T07:41:58Z INFO  dolma::deduper] Writing attributes for /home/azureuser/cloudfiles/code/Users/JNKuriakose/dolma_stuffs/datasets/wiki-en-simple/documents/en_simple_wiki-0000.json.gz to /home/azureuser/cloudfiles/code/Users/JNKuriakose/dolma_stuffs/datasets/wiki-en-simple/attributes/dedupe_paragraphs/en_simple_wiki-0000.json.gz.tmp
+[2024-01-31T07:41:58Z INFO  dolma::deduper] Writing attributes for /home/azureuser/cloudfiles/code/Users/JNKuriakose/dolma_stuffs/datasets/wiki-en-simple/documents/en_simple_wiki-0000.json.gz to /home/azureuser/cloudfiles/code/Users/JNKuriakose/dolma_stuffs/datasets/wiki-en-simple/attributes/dedupe_paragraphs/en_simple_wiki-0000.json.gz.tmp
+[2024-01-31T07:43:32Z INFO  dolma::deduper] Keeping local file "/home/azureuser/cloudfiles/code/Users/JNKuriakose/dolma_stuffs/datasets/wiki-en-simple/documents/en_simple_wiki-0001.json.gz" after deduping...
+[2024-01-31T07:44:58Z INFO  dolma::deduper] Keeping local file "/home/azureuser/cloudfiles/code/Users/JNKuriakose/dolma_stuffs/datasets/wiki-en-simple/documents/en_simple_wiki-0000.json.gz" after deduping...
+[2024-01-31T07:44:58Z INFO  dolma::deduper] Writing bloom filter to "/tmp/deduper_bloom_filter.bin"...
+[2024-01-31T07:44:58Z INFO  dolma::deduper] Bloom filter written.
+[2024-01-31T07:44:58Z INFO  dolma::deduper] Done!
 ```
 Deduplicate using URL: `dedupe_config.yaml`
 ```yaml
@@ -263,6 +294,48 @@ streams:
 
 # to make it run in parallel
 processes: 8
+```
+*Output*
+```bash
+(dolma_env) azureuser@jnkuriakose2:~/cloudfiles/code/Users/JNKuriakose/dolma_stuffs$ dolma -c mixer_config.yaml mix
+processes: 8
+streams:
+- attributes:
+  - exp
+  - dedupe_paragraphs
+  documents:
+  - /home/azureuser/cloudfiles/code/Users/JNKuriakose/dolma_stuffs/datasets/wiki-en-simple/documents/*.gz
+  filter:
+    exclude:
+    - $.attributes[?(@.exp__whitespace_tokenizer_with_paragraphs_v1__document[0][2]
+      < 50)]
+    - $.attributes[?(@.exp__ft_lang_id_en_paragraph_with_doc_score_v2__doc_en[0][2]
+      <= 0.5)]
+    - $@.attributes[?(@.bff_duplicate_paragraph_spans && @.bff_duplicate_paragraph_spans[0]
+      && @.bff_duplicate_paragraph_spans[0][2] >= 1.0)]
+    include:
+    - $.attributes[?(@.exp__whitespace_tokenizer_with_paragraphs_v1__document[0][2]
+      < 100000)]
+  name: getting-started
+  output:
+    max_size_in_bytes: 1000000000
+    path: /home/azureuser/cloudfiles/code/Users/JNKuriakose/dolma_stuffs/datasets/wiki-en-simple/mixer/documents
+  span_replacement:
+  - min_score: 0.1
+    replacement: ''
+    span: $.attributes.exp__cld2_en_paragraph_with_doc_score_v2__not_en
+work_dir:
+  input: /tmp/dolma-input-z5tl71sa
+  output: /tmp/dolma-output-myqpicl2
+[2024-01-31T09:02:55Z INFO  dolma::shard] Computing shards for stream getting-started...
+[2024-01-31T09:02:55Z INFO  dolma::shard] Splitting 2 files for getting-started into 2 shards
+[2024-01-31T09:02:56Z INFO  dolma::mixer] Building output "/home/azureuser/cloudfiles/code/Users/JNKuriakose/dolma_stuffs/datasets/wiki-en-simple/mixer/documents/getting-started-0000.json.gz"...
+[2024-01-31T09:02:56Z INFO  dolma::mixer] Building output "/home/azureuser/cloudfiles/code/Users/JNKuriakose/dolma_stuffs/datasets/wiki-en-simple/mixer/documents/getting-started-0001.json.gz"...
+[2024-01-31T09:02:56Z INFO  dolma::shard] Merging /home/azureuser/cloudfiles/code/Users/JNKuriakose/dolma_stuffs/datasets/wiki-en-simple/documents/en_simple_wiki-0000.json.gz into /home/azureuser/cloudfiles/code/Users/JNKuriakose/dolma_stuffs/datasets/wiki-en-simple/mixer/documents/getting-started-0000.json.gz
+[2024-01-31T09:02:56Z INFO  dolma::shard] Merging /home/azureuser/cloudfiles/code/Users/JNKuriakose/dolma_stuffs/datasets/wiki-en-simple/documents/en_simple_wiki-0001.json.gz into /home/azureuser/cloudfiles/code/Users/JNKuriakose/dolma_stuffs/datasets/wiki-en-simple/mixer/documents/getting-started-0001.json.gz
+[2024-01-31T09:11:38Z INFO  dolma::shard] Dropped 2928291 of 2928291 documents from /home/azureuser/cloudfiles/code/Users/JNKuriakose/dolma_stuffs/datasets/wiki-en-simple/documents/en_simple_wiki-0001.json.gz
+[2024-01-31T09:14:48Z INFO  dolma::shard] Dropped 3159681 of 3181719 documents from /home/azureuser/cloudfiles/code/Users/JNKuriakose/dolma_stuffs/datasets/wiki-en-simple/documents/en_simple_wiki-0000.json.gz
+[2024-01-31T09:14:48Z INFO  dolma::mixer] Done!
 ```
 Run the file:
 ```bash
